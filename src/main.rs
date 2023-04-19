@@ -22,7 +22,7 @@ use std::{
 /// The `new` function will panic if the size is zero.
 struct ThreadPool;
 impl ThreadPool {
-    fn start(number: u32, receiver: Arc<Mutex<Receiver<Job>>>) {
+    fn start(number: u32, receiver: Arc<Mutex<Receiver<Box<dyn FnOnce() + Send + 'static>>>>) {
         for i in 1..=number {
             let w: Worker = Worker {
                 id: i,
@@ -31,40 +31,36 @@ impl ThreadPool {
             w.start_working();
         }
     }
-    fn execute<F>(sender: Sender<Job>, func: F)
+    fn execute<F>(sender: Sender<Box<dyn FnOnce() + Send + 'static>>, func: F)
     where
         F: FnOnce() + Send + 'static,
     {
-        let job = Job {
-            func: Box::new(func),
-        };
-        sender.send(job);
+        sender.send(Box::new(func));
     }
 }
 
 struct Worker {
     pub id: u32,
 
-    pub receiver: Arc<Mutex<Receiver<Job>>>,
+    pub receiver: Arc<Mutex<Receiver<Box<dyn FnOnce() + Send + 'static>>>>,
 }
 
 impl Worker {
     fn start_working(self) {
         thread::spawn(move || {
             while let Ok(inner) = self.receiver.lock().unwrap().recv() {
-                (inner.func as Box<dyn FnOnce() -> ()>)();
+                (inner as Box<dyn FnOnce() -> ()>)();
             }
         });
     }
 }
 
-struct Job {
-    pub func: Box<dyn FnOnce() + Send + 'static>,
-}
-
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:8181").unwrap();
-    let (tx, rx): (Sender<Job>, Receiver<Job>) = mpsc::channel();
+    let (tx, rx): (
+        Sender<Box<dyn FnOnce() + Send + 'static>>,
+        Receiver<Box<dyn FnOnce() + Send + 'static>>,
+    ) = mpsc::channel();
     let arc_mutex_receiver = Arc::new(Mutex::new(rx));
     ThreadPool::start(4, arc_mutex_receiver);
     for stream in listener.incoming() {
