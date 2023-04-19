@@ -44,7 +44,6 @@ impl ThreadPool {
 
 struct Worker {
     pub id: u32,
-
     pub receiver: Arc<Mutex<Receiver<Job>>>,
 }
 
@@ -64,11 +63,11 @@ struct Job {
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:8181").unwrap();
-    let (tx, rx): (Sender<Job>, Receiver<Job>) = mpsc::channel();
-    let arc_mutex_receiver = Arc::new(Mutex::new(rx));
+    let (sender, receiver): (Sender<Job>, Receiver<Job>) = mpsc::channel();
+    let arc_mutex_receiver = Arc::new(Mutex::new(receiver));
     ThreadPool::start(4, arc_mutex_receiver);
     for stream in listener.incoming() {
-        ThreadPool::execute(tx.clone(), || {
+        ThreadPool::execute(sender.clone(), || {
             let mut strm = stream.unwrap();
             let mut buf_reader = BufReader::new(&strm);
             let mut buffer = String::new();
