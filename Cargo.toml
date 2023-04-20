@@ -9,4 +9,5 @@ edition = "2021"
 anyhow = {version = "1"}
 
 [dev-dependencies]
-reqwest = {versio = "0.11"}
+reqwest = {version = "0.11"}
+tokio = {version = "1", features= ["full"]}

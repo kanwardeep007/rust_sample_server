@@ -88,15 +88,21 @@ impl ServerTrait for Approach1Server {
                     .map(|item| item.unwrap())
                     .take_while(|x| !x.is_empty())
                     .collect();
-                // let write_buf = "HTTP/1.1 200 OK\r\n\r\n";
+
                 // thread::sleep(Duration::from_secs(4));
-                let mut hello_html = File::open("hello.html").unwrap();
-                let mut write_buffer = String::new();
-                let length = hello_html.read_to_string(&mut write_buffer).unwrap();
+                let request_string = &request.first().unwrap()[0..=3];
+                let mut content = "";
+                if request_string == "GET " {
+                    content = "Got a simple get request";
+                } else if request_string == "POST" {
+                    content = "Oh Noo post req";
+                };
+
+                let length = content.len();
                 strm.write_all(
                     format!(
                         "HTTP/1.1 200 OK\r\nContent-Length: {length}\r\n\r\n{}",
-                        write_buffer
+                        content
                     )
                     .as_ref(),
                 )?;
