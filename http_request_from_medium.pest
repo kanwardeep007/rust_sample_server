@@ -1,0 +1,5 @@
+request_line = { method  ~ " "+ ~ uri ~ " "+ ~ "HTTP/" ~ version ~ NEWLINE }
+uri = { (!whitespace ~ ANY)+ }
+method = { "GET" }
+version = { (ASCII_DIGIT | ".")+ }
+whitespace = { " " | "\t" }

@@ -1,4 +1,5 @@
 use crate::common::ServerTrait;
+use crate::parsing_http_request;
 use std::fs::File;
 use std::io::BufRead;
 use std::thread;
@@ -10,7 +11,6 @@ use std::{
         Arc, Mutex,
     },
 };
-
 /// Create a new ThreadPool.
 ///
 /// The size is the number of threads in the pool.
@@ -89,12 +89,14 @@ impl ServerTrait for Approach1Server {
                     .take_while(|x| !x.is_empty())
                     .collect();
 
+                let results =
+                    parsing_http_request::parse_http_request(&request.get(0).unwrap()).unwrap();
                 // thread::sleep(Duration::from_secs(4));
-                let request_string = &request.first().unwrap()[0..=3];
                 let mut content = "";
-                if request_string == "GET " {
+                dbg!(results.method);
+                if results.method == "GET" {
                     content = "Got a simple get request";
-                } else if request_string == "POST" {
+                } else if results.method == "POST" {
                     content = "Oh Noo post req";
                 };
 

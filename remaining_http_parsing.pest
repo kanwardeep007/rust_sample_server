@@ -1,0 +1,15 @@
+headers = { header ~ CRLF }
+header = { field_name ~ ":" ~ OWS ~ field_value ~ OWS }
+field_name = { token }
+field_value = { *( field_content | obs_fold ) }
+field_content = { <any OCTET except CTLs, but including LWS> }
+obs_fold = { CRLF 1*( SP / HTAB ) }
+body = { <any OCTET except CTLs, but including LWS> }
+
+OWS = { *WSP }
+WSP = { SP / HTAB }
+CTLs = { <any US-ASCII control character (octets 0 - 31) and DEL (127)> }
+
+uri = { (absolute_uri | relative_uri) }
+absolute_uri = { scheme ~ ":" ~ hier_part  }
+relative_uri = { (net_path | abs_path) }

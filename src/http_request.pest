@@ -1,0 +1,8 @@
+request = { SOI ~ method ~ " "+ ~ uri ~ " "+ ~ "HTTP/" ~ version ~ EOI}
+method = { ("GET" | "POST" | "PUT" | "DELETE") }
+version = { (ASCII_DIGIT | ".")+ }
+uri = { (!whitespace ~ ANY)+ }
+whitespace = _{ " " | "\t" }
+
+SP = {" "}
+CRLF = {"\r\n"}
